@@ -1,0 +1,16 @@
+[project]
+name = "my_sbit_project"
+version = "0.1.0"
+description = "My end to end Azure and Dataject"
+authors = [
+    {name = "StephanKnox",email = "stanislav.i.kulchitskiy@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
