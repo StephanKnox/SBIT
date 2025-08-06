@@ -1,16 +1,22 @@
 [project]
 name = "my_sbit_project"
 version = "0.1.0"
-description = "My end to end Azure and Dataject"
+description = "My end to end Azure and Databricks proect"
 authors = [
     {name = "StephanKnox",email = "stanislav.i.kulchitskiy@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "pyyaml (>=6.0.2,<7.0.0)",
+    "pyspark (==3.5.2)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+sbit-launcher = "my_sbit_project.run_main:main"
+sbit-init = "my_sbit_project.run_init:main"
