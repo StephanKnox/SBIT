@@ -8,17 +8,19 @@ def main():
 
     arg_specs = [
         ("--env", dict(required=True, type=str, help="DB name for a project")),
+        ("--param", dict(required=True, type=str, help="Path to job parameter file")),
     ]
 
     for arg_name, arg_params in arg_specs:
         parser.add_argument(arg_name, **arg_params)
 
     known_args, unknown_args = parser.parse_known_args()
-    env = known_args.env 
+    env, param = known_args.env, known_args.param
 
     print(f'Entry point executed with parameters: {known_args}')
-    job = SetupHelper(env)
+    job = SetupHelper(env, param)
     job.run()
 
 if __name__ == '__main__':
     main()
+    
