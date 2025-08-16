@@ -19,8 +19,7 @@ def main():
 
     print(f'Entry point executed with parameters: {known_args}')
     job = SetupHelper(env, param)
-    job.run()
+    job.launch()
 
 if __name__ == '__main__':
     main()
-    

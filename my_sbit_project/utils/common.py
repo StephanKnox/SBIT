@@ -33,7 +33,7 @@ class DatabricksWorkflow(ABC):
         except AnalysisException as e:
             # TO DO: replace prints with logging
             print(f"Execution error when running SQL: {sql_stmt}")
-            raise 
+            raise
 
     @staticmethod
     def read_yaml(cfg_file):

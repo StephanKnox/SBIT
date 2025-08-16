@@ -1,9 +1,9 @@
-from my_sbit_project.utils.common import DatabricksWorkflow, exec_sql
+from my_sbit_project.utils.common import DatabricksWorkflow
 
 
 class SetupHelper(DatabricksWorkflow):   
     def __init__(self, env, app_cfg):      
-        super.__init__(env, app_cfg)
+        super().__init__(env, app_cfg)
         #self.catalog = env
         #self.paramfile = param
         self.initialized = False
@@ -21,7 +21,7 @@ class SetupHelper(DatabricksWorkflow):
         for task_name, task_config in tasks.items():
             sql_stmt= task_config.get("sql_query")
             print(f"Executing {task_name}..", end='')
-            exec_sql(self.spark, sql_stmt, {"catalog":self.catalog})
+            self.exec_sql(sql_stmt, {"catalog":self.env})
             print("Done")
         self.initialized = True
         print(f"Setup completed in {int(time.time()) - start} seconds")
