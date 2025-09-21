@@ -1,0 +1,12 @@
+job_config:
+  source:
+    path: "/Volumes/dev/param/data_zone/history/6-date-lookup.json"
+    options:
+      cloudFiles.format: "json"
+  sink:
+    target: "sbit_db.date_lookup"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/DataLoader"
+  
