@@ -120,12 +120,12 @@ job_config:
       sql_query: >
         CREATE TABLE IF NOT EXISTS IDENTIFIER(:catalog || '.sbit_db.' ||   'date_lookup')(
                     date date, 
-                    week int, 
-                    year int, 
-                    month int, 
-                    dayofweek int, 
-                    dayofmonth int, 
-                    dayofyear int, 
+                    week bigint, 
+                    year bigint, 
+                    month bigint, 
+                    dayofweek bigint, 
+                    dayofmonth bigint, 
+                    dayofyear bigint, 
                     week_part string)
 
     create_workout_bpm_summary:

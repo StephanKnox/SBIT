@@ -1,5 +1,6 @@
 import yaml
 from argparse import Namespace
+from dataclasses import is_dataclass, fields
 from pyspark.sql import SparkSession
 from pyspark.sql.utils import AnalysisException
 
@@ -47,3 +48,23 @@ class SqlExecutor:
 
 def parse_wkf_args(args: Namespace) -> dict:
     return vars(args)
+
+
+def from_dict(data_class, data: dict):
+    """
+    Recursively instantiate a dataclass from a dict.
+    Supports nested dataclasses.
+    """
+    if not is_dataclass(data_class):
+        raise TypeError(f"{data_class} is not a dataclass type")
+
+    fieldtypes = {f.name: f.type for f in fields(data_class)}
+    init_kwargs = {}
+
+    for key, field_type in fieldtypes.items():
+        value = data.get(key)
+        if is_dataclass(field_type):
+            init_kwargs[key] = from_dict(field_type, value or {})
+        else:
+            init_kwargs[key] = value
+    return data_class(**init_kwargs)
