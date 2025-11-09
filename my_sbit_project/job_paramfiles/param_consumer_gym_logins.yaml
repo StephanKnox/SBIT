@@ -1,0 +1,13 @@
+job_config:
+  source:
+    path: "/Volumes/dev/param/data_zone/gym_logins_bz"
+    options:
+      cloudFiles.format: "csv"
+      header: "true"
+  sink:
+    target: "sbit_db.gym_logins_bz"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/ConsumerGymLogins"
+  

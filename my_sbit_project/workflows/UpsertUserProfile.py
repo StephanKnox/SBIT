@@ -1,3 +1,5 @@
+# TODO
+
 import time
 from pyspark.sql import DataFrame, functions as fn
 from pyspark.sql.types import StructField, StructType, LongType ,StringType, TimestampType, DateType
@@ -28,7 +30,7 @@ json_schema = StructType([
 
 
 class UserInfoLoader(DatabricksStreamingMixin, DatabricksWorkflow):
-    job_config_class = JobConfig
+    job_config_class = JobConfig()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,14 +68,11 @@ class UserInfoLoader(DatabricksStreamingMixin, DatabricksWorkflow):
         ##.start().awaitTermination()
         ##)
 
-    def parse_df(self, df:DataFrame) -> DataFrame:
-        """TO DO"""
-
-        select_cols = [
-            fn.col(col_info["json_path"]).cast(col_info["col_type"]).alias(col_name)
-            for col_name, col_info in date_loader_cols_mapping.items()]
+    def parse_df(self, df: DataFrame) -> DataFrame:
+        select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
          
-        df_parsed = df
+        df_parsed = df.select(*select_cols)
+        return df_parsed
 
 
     def transform_df(self, df: DataFrame) -> DataFrame:

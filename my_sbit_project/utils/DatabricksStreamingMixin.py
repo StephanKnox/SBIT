@@ -1,5 +1,5 @@
 import time
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as fn
 
 
 class DatabricksStreamingMixin:
@@ -14,7 +14,7 @@ class DatabricksStreamingMixin:
                      .load(self.source_path))
         return df_source
 
-    def append_batch_todelta(self, df, epoch_id, arg_mode= "append", to_parse=True):
+    def sink_batch_todelta(self, df, epoch_id, arg_mode= "append", to_parse=True):
         """Write micro batch function to be passed to .forEachBatch()"""
         print(f"Running micro-batch {epoch_id}")
 
@@ -24,3 +24,11 @@ class DatabricksStreamingMixin:
 
         df.write.format("delta").mode(arg_mode).saveAsTable(f"{self.env}.{self.sink_target}")
         print(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
+
+    def add_meta_columns(self, df: DataFrame) -> DataFrame:   
+        """Add metadata columns to the input dataframe"""
+        df = df.withColumns({
+                  "load_time": fn.current_timestamp(),
+                  "source_file": fn.col("_metadata.file_name")})
+        
+        return df

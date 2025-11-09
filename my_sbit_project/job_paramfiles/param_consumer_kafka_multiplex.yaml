@@ -1,0 +1,12 @@
+job_config:
+  source:
+    path: "/Volumes/dev/param/data_zone/kafka_multiplex_bz"
+    options:
+      cloudFiles.format: "json"
+  sink:
+    target: "sbit_db.kafka_multiplex_bz"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/ConsumerKafkaMultiplex"
+  

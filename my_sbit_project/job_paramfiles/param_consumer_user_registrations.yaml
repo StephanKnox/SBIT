@@ -1,0 +1,13 @@
+job_config:
+  source:
+    path: "/Volumes/dev/param/data_zone/registered_users_bz"
+    options:
+      cloudFiles.format: "csv"
+      header: "true"
+  sink:
+    target: "sbit_db.registered_users_bz"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/ConsumerUserRegistrations"
+  
