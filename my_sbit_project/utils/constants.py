@@ -9,3 +9,11 @@ address_struct = StructType([
     StructField("zip", StringType(), True),
 ])
 
+kafka_multiplex_struct = StructType([
+    StructField("key", StringType(), True),
+    StructField("value", StringType(), True),
+    StructField("topic", StringType(), True),
+    StructField("partition", LongType(), True),
+    StructField("offset", LongType(), True),
+    StructField("timestamp", LongType(), True),  
+])

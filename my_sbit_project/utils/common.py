@@ -1,7 +1,7 @@
 import yaml
 from argparse import Namespace
 from dataclasses import is_dataclass, fields
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, functions as fn
 from pyspark.sql.utils import AnalysisException
 
 
@@ -49,7 +49,6 @@ class SqlExecutor:
 def parse_wkf_args(args: Namespace) -> dict:
     return vars(args)
 
-
 def from_dict(data_class, data: dict):
     """
     Recursively instantiate a dataclass from a dict.
@@ -68,3 +67,9 @@ def from_dict(data_class, data: dict):
         else:
             init_kwargs[key] = value
     return data_class(**init_kwargs)
+
+def from_col_mapping_to_select(col_mapping: dict) -> list:
+    select_cols = [
+            fn.col(col_info["json_path"]).cast(col_info["col_type"]).alias(col_name)
+            for col_name, col_info in col_mapping.items()]
+    return select_cols

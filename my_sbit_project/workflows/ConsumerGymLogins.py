@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as fn
-from pyspark.sql.types import StructType, StructField, DateType, StringType
+from pyspark.sql.types import StructType, StructField, StringType, LongType, DecimalType, DoubleType
 from my_sbit_project.utils.workflow import DatabricksWorkflow
 from my_sbit_project.utils.mapping import date_loader_cols_mapping
 from my_sbit_project.utils.DatabricksStreamingMixin import DatabricksStreamingMixin
@@ -8,18 +8,14 @@ from my_sbit_project.utils.common import from_col_mapping_to_select
 
 
 json_schema = StructType([
-    StructField("date", DateType(), True),
-    StructField("dayofmonth", StringType(), True),
-    StructField("dayofweek", StringType(), True),
-    StructField("dayofyear", StringType(), True),
-    StructField("month", StringType(), True),
-    StructField("week", StringType(), True),
-    StructField("year", StringType(), True),
-    StructField("week_part", StringType(), True),
+    StructField("mac_address", StringType(), True),
+    StructField("gym", LongType(), True),
+    StructField("login", DoubleType(), True),
+    StructField("logout", DoubleType(), True),
 ])
 
 
-class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
+class ConsumerGymLogins(DatabricksStreamingMixin, DatabricksWorkflow):
     job_config_class = JobConfig
 
     def __init__(self, **kwargs):
@@ -34,28 +30,32 @@ class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
         self.sink_options = self.job_cfg.sink.options
         self.streaming_options = {}
 
+    # TODO: move to DatabricksWorkflow ???
     def __repr__(self):
         return "\n".join([f"{k}={v}" for k,v in self.__dict__.items()])
 
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         print(self)
 
         # read source
         df_source = self.read_files_source(json_schema)
+        # add metadata columns
+        df_source = self.add_meta_columns(df_source)
 
+        # TODO parsing is not needed?
         (
         df_source.writeStream
         .trigger(**self.sink_trigger)
         .queryName(self.app_name)
         .options(**self.sink_options)
-        .foreachBatch(lambda df, epoch_id: self.sink_batch_todelta(df, epoch_id, "overwrite"))
+        .foreachBatch(lambda df, epoch_id: self.sink_batch_todelta(df, epoch_id, to_parse=False))
         .start()
         .awaitTermination()
         )
     
-    def parse_df(self, df: DataFrame) -> DataFrame:
-        select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-         
-        df_parsed = df.select(*select_cols)
-        return df_parsed
+    #def parse_df(self, df: DataFrame) -> DataFrame:
+    #    select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
+    #    df_parsed = df.select(*select_cols)
+        
+    #    return df_parsed
+    
