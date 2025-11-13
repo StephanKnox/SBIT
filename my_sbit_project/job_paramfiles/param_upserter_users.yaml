@@ -1,0 +1,20 @@
+job_config:
+  source:
+    path: "sbit_db.registered_users_bz"
+    options:
+      skipChangedCommits: "true"
+    watermark: 
+      delay: "30 seconds"
+      event_time: "registration_timestamp"
+  sink:
+    target: "sbit_db.users"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterUsers"
+  params:
+    merge:
+      merge_condition: "target.user_id = source.user_id"
+    deduplication:
+      unique_cols: user_id, device_id
+      tiebreaker_cols: registration_timestamp

@@ -20,7 +20,10 @@ class DatabricksWorkflow(ABC):
         else:
             self.job_cfg = job_cfg_dict  # raw dict fallback
 
+    def __repr__(self):
+        parts = [ f"{k}={v!r}" for k,v in vars(self).items() if not (k.startswith("_") or callable(v))]
+        return f"{self.__class__.__name__}({', '.join(parts)})"
 
-    @abstractmethod
-    def launch(self):
-        pass
+    ##@abstractmethod
+    ##def launch(self):
+    ##    pass

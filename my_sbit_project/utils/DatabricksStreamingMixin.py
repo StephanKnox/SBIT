@@ -13,6 +13,18 @@ class DatabricksStreamingMixin:
                      .options(**self.source_options)
                      .load(self.source_path))
         return df_source
+    
+    def read_deltatable_source(self, filter_stmt=None) -> DataFrame:
+        """Read a delta table and return a dataframe"""
+        df_source = (self.spark.readStream
+                  .format("delta")
+                  .options(**self.source_options)
+                  .table(self.source_path)
+        )
+        if filter_stmt:
+            df_source = df_source.filter(filter_stmt)
+        return df_source
+
 
     def sink_batch_todelta(self, df, epoch_id, arg_mode= "append", to_parse=True):
         """Write micro batch function to be passed to .forEachBatch()"""
@@ -25,7 +37,7 @@ class DatabricksStreamingMixin:
         df.write.format("delta").mode(arg_mode).saveAsTable(f"{self.env}.{self.sink_target}")
         print(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 
-    def add_meta_columns(self, df: DataFrame) -> DataFrame:   
+    def add_file_meta_columns(self, df: DataFrame) -> DataFrame:   
         """Add metadata columns to the input dataframe"""
         df = df.withColumns({
                   "load_time": fn.current_timestamp(),

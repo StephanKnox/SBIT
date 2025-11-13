@@ -12,8 +12,20 @@ class SourceConfig:
     path: str
     filter: str
     options: dict
+    watermark: dict
+
+@dataclass
+class Params:
+    deduplication: dict
+    merge: dict
+
+@dataclass
+class StreamingOptions:
+    options: dict
 
 @dataclass
 class JobConfig:
     sink: SinkConfig
     source: SourceConfig
+    params: Params
+    streaming_options: StreamingOptions

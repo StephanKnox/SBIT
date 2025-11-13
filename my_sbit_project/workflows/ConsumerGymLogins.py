@@ -1,10 +1,7 @@
-from pyspark.sql import DataFrame, functions as fn
 from pyspark.sql.types import StructType, StructField, StringType, LongType, DecimalType, DoubleType
 from my_sbit_project.utils.workflow import DatabricksWorkflow
-from my_sbit_project.utils.mapping import date_loader_cols_mapping
 from my_sbit_project.utils.DatabricksStreamingMixin import DatabricksStreamingMixin
 from my_sbit_project.utils.JobConfigStreaming import JobConfig
-from my_sbit_project.utils.common import from_col_mapping_to_select
 
 
 json_schema = StructType([
@@ -30,17 +27,13 @@ class ConsumerGymLogins(DatabricksStreamingMixin, DatabricksWorkflow):
         self.sink_options = self.job_cfg.sink.options
         self.streaming_options = {}
 
-    # TODO: move to DatabricksWorkflow ???
-    def __repr__(self):
-        return "\n".join([f"{k}={v}" for k,v in self.__dict__.items()])
-
     def launch(self):
         print(self)
 
         # read source
         df_source = self.read_files_source(json_schema)
         # add metadata columns
-        df_source = self.add_meta_columns(df_source)
+        df_source = self.add_file_meta_columns(df_source)
 
         # TODO parsing is not needed?
         (
