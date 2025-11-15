@@ -14,8 +14,7 @@ job_config:
       checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterGymLogins"
   params:
     merge:
-      merge_condition: "target.mac_address = source.mac_address AND target.gym = source.gym AND target.login = source.login" 
-      update_condition: "source.logout > target.login AND source.logout > target.logout"
+      merge_condition: "target.mac_address = source.mac_address AND target.gym = source.gym AND target.login = source.login"
     deduplication:
       unique_cols: mac_address, gym, login
       tiebreaker_cols: load_time

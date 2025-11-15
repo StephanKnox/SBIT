@@ -127,13 +127,16 @@ def remove_duplicates(
             for col, direction in ordering.items()
         ]
     else:
-        raise ValueError("Parameter 'ordering' must be either a column name (str) or a dict of {col: order}.")
+        ordering = None
+        ##raise ValueError("Parameter 'ordering' must be either a column name (str) or a dict of {col: order}.")
 
     # Apply window spec and filter to retain the first row per group
-    win_spec = Window.partitionBy(*unique_cols).orderBy(*order_expr)
-    df_with_rwn = df.withColumn("row_number", fn.row_number().over(win_spec))
-
-    return df_with_rwn.filter("row_number = 1").drop("row_number")
+    if ordering:
+        win_spec = Window.partitionBy(*unique_cols).orderBy(*order_expr)
+        df_with_rwn = df.withColumn("row_number", fn.row_number().over(win_spec))
+        return df_with_rwn.filter("row_number = 1").drop("row_number")
+    else:
+        return df.dropDuplicates(subset=unique_cols)
 
 
 def add_missing_columns(df, cols):

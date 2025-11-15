@@ -1,21 +1,21 @@
 job_config:
   source:
     path: "sbit_db.kafka_multiplex_bz"
-    filter: "topic = 'workout'"
+    filter: "topic = 'user_info'"
     options:
       skipChangedCommits: "true"
     watermark: 
       delay: "30 seconds"
       event_time: "timestamp"
   sink:
-    target: "sbit_db.workouts"
+    target: "sbit_db.user_profile"
     trigger:
       availableNow: true
     options:
-      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterWorkouts"
+      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterUserProfiles"
   params:
     merge:
-      merge_condition: "target.user_id = source.user_id AND target.time = source.time" 
+      merge_condition: "target.user_id = source.user_id"
     deduplication:
-      unique_cols: user_id, action, timestamp
+      unique_cols: user_id
       tiebreaker_cols: timestamp

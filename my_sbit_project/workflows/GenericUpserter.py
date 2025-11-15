@@ -20,9 +20,12 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         self.source_options = self.job_cfg.source.options
         self.source_filter = self.job_cfg.source.filter
         watermark = self.job_cfg.source.watermark
-        self.watermark_eventtime = watermark.get("event_time")
-        self.watermark_delay = watermark.get("delay")
-        
+        if watermark:
+            self.watermark_eventtime = watermark.get("event_time")
+            self.watermark_delay = watermark.get("delay")
+        else:
+            self.watermark_eventtime = None
+            self.watermark_delay = None
         # Sink
         self.sink_target = f"{self.env}.{self.job_cfg.sink.target}"
         self.sink_trigger = self.job_cfg.sink.trigger
@@ -45,6 +48,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
     @abstractmethod
     def launch(self):
         pass
+        ###df = self.transform_df(df)
         
         #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         ##print(self)

@@ -1,11 +1,14 @@
-import GenericUpserter
+from pyspark.sql.functions import col
+from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 
 
 class UpserterUsers(GenericUpserter):
-    def enrich_df(input_df):
-        df_enriched = (input_df
-                       .withColumn("registration_timestamp", "cast(registration_timestamp as timestamp)")
-                       .selec("user_id", "device_id", "mac_address", "registration_timestamp"))
+    def enrich_df(self, input_df):
+        df_enriched = (
+            input_df
+            .withColumn("registration_timestamp", col("registration_timestamp").cast("timestamp"))
+            .select("user_id", "device_id", "mac_address", "registration_timestamp")
+        )
         return df_enriched
     
     def launch(self):
@@ -19,12 +22,4 @@ class UpserterUsers(GenericUpserter):
 
         df = self.enrich_df(df_source)
 
-        (
-        df.writeStream
-        .trigger(**self.sink_trigger)
-        .queryName(self.app_name)
-        .options(**self.sink_options)
-        .foreachBatch(lambda df, epoch_id: self.upsert(df, epoch_id))
-        .start()
-        .awaitTermination()
-        )
+        self.stream_upsert(df)

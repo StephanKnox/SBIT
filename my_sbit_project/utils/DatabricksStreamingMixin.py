@@ -44,3 +44,15 @@ class DatabricksStreamingMixin:
                   "source_file": fn.col("_metadata.file_name")})
         
         return df
+    
+    def stream_upsert(self, df):
+        
+        (
+        df.writeStream
+        .trigger(**self.sink_trigger)
+        .queryName(self.app_name)
+        .options(**self.sink_options)
+        .foreachBatch(lambda df, epoch_id: self.upsert(df, epoch_id))
+        .start()
+        .awaitTermination()
+        )
