@@ -25,20 +25,19 @@ class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        # Attributes from dataclass
+        # Source
         self.source_path = self.job_cfg.source.path
         self.source_options= self.job_cfg.source.options
-        ##self.source_filter = self.job_cfg.source.filter
+        self.source_filter = self.job_cfg.source.filter
+        # Sink
         self.sink_target= self.job_cfg.sink.target
         self.sink_trigger = self.job_cfg.sink.trigger
         self.sink_options = self.job_cfg.sink.options
-        self.streaming_options = {}
-
-    def __repr__(self):
-        return "\n".join([f"{k}={v}" for k,v in self.__dict__.items()])
+        # Streaming  
+        streaming_options = self.job_cfg.streaming.options
+        
 
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         print(self)
 
         # read source

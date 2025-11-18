@@ -9,4 +9,9 @@ job_config:
       availableNow: true
     options:
       checkpointLocation: "/Volumes/dev/param/checkpoint/DataLoader"
-  
+  params:
+    merge:
+      merge_condition: "target.col1 = source.col1 and target.col2 = source.col2"
+    deduplication:
+      unique_cols: col1, col2
+      tiebreaker_cols: mytimestamp

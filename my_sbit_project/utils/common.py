@@ -1,7 +1,8 @@
-import yaml
+import re
 from argparse import Namespace
+import yaml
 from dataclasses import is_dataclass, fields
-from pyspark.sql import SparkSession, functions as fn
+from pyspark.sql import Window, SparkSession, functions as fn, Column
 from pyspark.sql.utils import AnalysisException
 
 
@@ -73,3 +74,85 @@ def from_col_mapping_to_select(col_mapping: dict) -> list:
             fn.col(col_info["json_path"]).cast(col_info["col_type"]).alias(col_name)
             for col_name, col_info in col_mapping.items()]
     return select_cols
+
+def _remove_duplicates(df, unique_cols, timestamp_col, order="desc"):
+    """Removes duplicate rows from a Dataframe based on a list of columns to
+    uniquely identify duplicates and a timestamp column to determine the latest row
+    
+            Params:
+                df: input dataframe
+                unique_cols: list of columns to determine uniqueness
+                timestamp_col: tie-breaker timestamp column name
+                order: Default "desc" options[desc|asc]
+            Returns:
+                Dataframe with duplicate rows removed"""
+    
+    order = fn.col(f"{timestamp_col}") if order.lower() != "desc" else fn.col(f"{timestamp_col}").desc()
+
+    win_spec = Window.partitionBy(*unique_cols).orderBy(order)
+    df_with_rwn = df.withColumn("row_number", fn.row_number().over(win_spec))
+
+    return df_with_rwn.filter("row_number = 1").drop("row_number")
+
+
+def remove_duplicates(
+    df, 
+    unique_cols, 
+    ordering=None, 
+    default_order="desc"
+):
+    """
+    Removes duplicate rows from a DataFrame based on columns that determine uniqueness
+    and one or more ordering columns that define which record to keep.
+
+    Params:
+        df: input DataFrame
+        unique_cols: list of columns to determine uniqueness
+        ordering:
+            - If a string → treated as single ordering column name
+            - If a dict → treated as {column_name: "asc"|"desc"} for multi-column ordering
+        default_order: ordering direction ("desc" or "asc") used when 'ordering' is a string
+    Returns:
+        DataFrame with duplicate rows removed
+    """
+
+    if isinstance(ordering, str):
+        # Single column mode
+        col_order = fn.col(ordering).desc() if default_order.lower() == "desc" else fn.col(ordering).asc()
+        order_expr = [col_order]
+    elif isinstance(ordering, dict):
+        # Multi-column mode
+        order_expr = [
+            fn.col(col).desc() if direction.lower() == "desc" else fn.col(col).asc()
+            for col, direction in ordering.items()
+        ]
+    else:
+        ordering = None
+        ##raise ValueError("Parameter 'ordering' must be either a column name (str) or a dict of {col: order}.")
+
+    # Apply window spec and filter to retain the first row per group
+    if ordering:
+        win_spec = Window.partitionBy(*unique_cols).orderBy(*order_expr)
+        df_with_rwn = df.withColumn("row_number", fn.row_number().over(win_spec))
+        return df_with_rwn.filter("row_number = 1").drop("row_number")
+    else:
+        return df.dropDuplicates(subset=unique_cols)
+
+
+def add_missing_columns(df, cols):
+        pass
+
+def string_to_list(string, sep=","):
+    """
+    Splits a string into a list by the given separator, ignoring spaces around separators.
+    
+    Args:
+        string (str): The input string to split.
+        sep (str, optional): The separator to split by. Defaults to ','.
+    
+    Returns:
+        list[str]: A list of trimmed substrings.
+    """
+    # Escape the separator for regex in case it's a special character (like '.')
+    pattern = rf'\s*{re.escape(sep)}\s*'
+    return re.split(pattern, string.strip())

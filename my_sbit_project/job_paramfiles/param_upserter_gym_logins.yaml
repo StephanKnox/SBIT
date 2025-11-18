@@ -1,0 +1,20 @@
+job_config:
+  source:
+    path: "sbit_db.gym_logins_bz"
+    options:
+      skipChangedCommits: "true"
+    watermark: 
+      delay: "30 seconds"
+      event_time: "login"
+  sink:
+    target: "sbit_db.gym_logs"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterGymLogins"
+  params:
+    merge:
+      merge_condition: "target.mac_address = source.mac_address AND target.gym = source.gym AND target.login = source.login"
+    deduplication:
+      unique_cols: mac_address, gym, login
+      tiebreaker_cols: load_time
