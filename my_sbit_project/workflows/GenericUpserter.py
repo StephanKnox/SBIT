@@ -39,11 +39,12 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         self.delete_whenmatched = merge_details.get("delete_whenmatched", False)
         # Deduplication
         deduplication_details = self.job_cfg.params.deduplication
-
-        ##result = re.split(r'\s*,\s*', deduplication_details.get("unique_cols"))
-        self.unique_cols = string_to_list(deduplication_details.get("unique_cols"))
-        #list(deduplication_details.get("unique_cols").split(","))
-        self.tiebreaker_cols = deduplication_details.get("tiebreaker_cols")
+        if deduplication_details:
+            self.unique_cols = string_to_list(deduplication_details.get("unique_cols"))
+            self.tiebreaker_cols = deduplication_details.get("tiebreaker_cols")
+        else:
+            self.unique_cols  = None
+            self.tiebreaker_cols = None
 
     @abstractmethod
     def launch(self):
@@ -83,7 +84,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         ##df_parsed = self.enrich_df(df)
 
         if self.unique_cols:
-            df_parsed = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols )
+            df = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols )
 
         target_table = DeltaTable.forName(self.spark, self.sink_target)
         target_columns = target_table.toDF().columns
@@ -108,7 +109,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         
         update_exprs = {**default_update_exprs, **update_exprs}
 
-        self.merge(df_parsed, target_table, update_exprs)
+        self.merge(df, target_table, update_exprs)
 
         print(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 

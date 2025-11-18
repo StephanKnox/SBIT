@@ -1,0 +1,14 @@
+job_config:
+  source:
+    path: "sbit_db.user_profile"
+    options:
+      skipChangedCommits: "true"
+  sink:
+    target: "sbit_db.user_bins"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterUserBins"
+  params:
+    merge:
+      merge_condition: "target.user_id = source.user_id"
