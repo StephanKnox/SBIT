@@ -1,6 +1,6 @@
 [project]
 name = "my_sbit_project"
-version = "1.2.4"
+version = "1.2.5"
 description = "My end to end Azure and Databricks project"
 authors = [
     {name = "StephanKnox",email = "stanislav.i.kulchitskiy@gmail.com"}
