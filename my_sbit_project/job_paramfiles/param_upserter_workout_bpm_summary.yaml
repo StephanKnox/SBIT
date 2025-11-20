@@ -1,0 +1,17 @@
+job_config:
+  source:
+    path: "sbit_db.workout_bpm"
+    options:
+      skipChangedCommits: "true"
+    watermark: 
+      delay: "30 seconds"
+      event_time: "end_time"
+  sink:
+    target: "sbit_db.workout_bpm_summary"
+    trigger:
+      availableNow: true
+    options:
+      checkpointLocation: "/Volumes/dev/param/checkpoint/UpserterWorkoutBpmSummary"
+  params:
+    merge:
+      merge_condition: "target.user_id = source.user_id AND target.workout_id = source.workout_id AND target.session_id = source.session_id"
