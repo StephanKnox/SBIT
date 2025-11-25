@@ -24,8 +24,13 @@ class StreamingOptions:
     options: dict
 
 @dataclass
+class BackfillConfig:
+    options: dict
+
+@dataclass
 class JobConfig:
     sink: SinkConfig
     source: SourceConfig
     params: Params
     streaming_options: StreamingOptions
+    backfill: BackfillConfig

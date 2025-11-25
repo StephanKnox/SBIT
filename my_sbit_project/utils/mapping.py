@@ -94,7 +94,7 @@ workouts_cols_mapping = {
                             "json_path": "parsedJson.workout_id"
                         },
                         "timestamp": {
-                            "col_type": "float",
+                            "col_type": "timestamp",
                             "json_path": "parsedJson.timestamp"
                         },
                         "action": {

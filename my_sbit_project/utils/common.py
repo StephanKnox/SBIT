@@ -156,3 +156,39 @@ def string_to_list(string, sep=","):
     # Escape the separator for regex in case it's a special character (like '.')
     pattern = rf'\s*{re.escape(sep)}\s*'
     return re.split(pattern, string.strip())
+
+def _get_partition_values(df, partition_col, date_from, date_to) -> list:
+    
+        ##filter_expr = (f"CREATION_DATE between DATE('{date_from}') and DATE('{date_to}')")
+        filter_expr = (f"{partition_col} between DATE('{date_from}') and DATE('{date_to}')")
+
+        print(f"Date from: {date_from} and {date_to}")
+        print(f"Filter expression: {filter_expr}")
+
+        return (
+        df.select(fn.col(partition_col))
+            .distinct()
+            .where(filter_expr)
+            .orderBy(fn.col(partition_col))
+            .rdd.map(lambda x: x[0])
+            .collect()
+        )
+
+def get_partition_values(df, partition_col, date_from, date_to) -> list:
+    
+    filter_expr = (
+        f"{partition_col} between DATE('{date_from}') and DATE('{date_to}')"
+    )
+
+    print(f"Date from: {date_from} and {date_to}")
+    print(f"Filter expression: {filter_expr}")
+
+    rows = (
+        df.select(fn.col(partition_col))
+          .where(filter_expr)
+          .distinct()
+          .orderBy(fn.col(partition_col))
+          .collect()
+    )
+    
+    return [row[partition_col] for row in rows]

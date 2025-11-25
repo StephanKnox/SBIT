@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as fn
-from pyspark.sql.types import StructField, StructType, LongType ,StringType, TimestampType, DateType
+from pyspark.sql.types import StructField, StructType, LongType ,StringType, TimestampType, FloatType
 from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 from my_sbit_project.utils.common import from_col_mapping_to_select
 from my_sbit_project.utils.mapping import workouts_cols_mapping
@@ -8,7 +8,7 @@ from my_sbit_project.utils.mapping import workouts_cols_mapping
 json_schema = StructType([
         StructField("user_id", LongType(), True),
         StructField("workout_id", LongType(), True),
-        StructField("timestamp", TimestampType(), True), 
+        StructField("timestamp", FloatType(), True), 
         StructField("action", StringType(), True),
         StructField("session_id", LongType(), True)
 ])
