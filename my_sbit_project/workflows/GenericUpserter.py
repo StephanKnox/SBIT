@@ -84,7 +84,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         ##df_parsed = self.enrich_df(df)
 
         if self.unique_cols:
-            df = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols )
+            df = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols)
 
         target_table = DeltaTable.forName(self.spark, self.sink_target)
         target_columns = target_table.toDF().columns

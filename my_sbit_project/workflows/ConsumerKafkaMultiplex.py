@@ -61,6 +61,6 @@ class ConsumerKafkaMultiplex(DatabricksStreamingMixin, DatabricksWorkflow):
                           .select("date", "week_part"))
         
         df_enriched = df.join(fn.broadcast(df_date_lookup), 
-                              [fn.to_date((fn.col("timestamp")/1000).cast("timestamp")) == fn.col("date")], 
+                              [fn.to_date((fn.col("timestamp")).cast("timestamp")) == fn.col("date")], 
                               "left")
         return df_enriched
