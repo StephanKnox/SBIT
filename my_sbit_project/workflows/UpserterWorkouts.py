@@ -45,3 +45,8 @@ class UpserterWorkouts(GenericUpserter):
          
         df_parsed = df.select(*select_cols)
         return df_parsed
+    
+
+    ["--env","DEV",
+     "--app_cfg","/Volumes/dev/param/job_params/param_upserter_workouts.yaml",
+     "--app","UpserterWorkouts"]

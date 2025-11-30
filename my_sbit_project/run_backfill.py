@@ -2,7 +2,7 @@
 import argparse
 import importlib
 from my_sbit_project.utils.common import parse_wkf_args
-from my_sbit_project.workflows.BackfillWkfFactory import BackfillWkfFactory
+from my_sbit_project.workflows.GenericBackfillWkf import GenericBackfillWkf
 
 
 def main():
@@ -37,16 +37,19 @@ def main():
 
     # Get the workflow class and instantiate it
     workflow_class = getattr(module, app.split('.')[-1])
-    wkf_instance = workflow_class(**parse_wkf_args(known_args))
-
+    
+    wkf_instance = workflow_class(**backfill_wkf_args)
     backfill_wkf_args["wkf_instance"] = wkf_instance
+    
 
     # Launch the workflow with error handling
     try:
         #print(workflow_instance)
         # TODO
         # to change to a generic backfill class call
-        backfill_wkf = BackfillWkfFactory.get_backfill_wkf(app, backfill_wkf_args)
+        ##backfill_wkf = BackfillWkfFactory.get_backfill_wkf(app, backfill_wkf_args)
+        ##backfill_wkf.launch()
+        backfill_wkf = GenericBackfillWkf(**backfill_wkf_args)
         backfill_wkf.launch()
     except Exception as err:
         #err_msg = f'{err=}, {type(err)=} {traceback.format_exc()}'

@@ -1,18 +1,19 @@
-import datetime
+from datetime import datetime
 from pyspark.sql import DataFrame, functions as fn
 from delta.tables import DeltaTable
 from my_sbit_project.utils.common import get_partition_values, remove_duplicates
 
 
-class BackfillWkfWorkouts:
+class GenericBackfillWkf:
     def __init__(self, **kwargs):
         self.wkf_instance = kwargs.get("wkf_instance")
         self.dt_from = kwargs.get("dt_from")
         self.dt_to = kwargs.get("dt_to")
         self.dt_filter_col = kwargs.get("dt_filter_col")
         # TODO
-        # figure out a generic condition from the param file mb ?
-        self._upd_condition = fn.col("source.workout_id") == 1
+        # Set in GenericUpseerter and dataclass schema
+        self._upd_condition = None
+
         
     def launch(self):
         if not self.dt_to:
@@ -25,14 +26,12 @@ class BackfillWkfWorkouts:
         upd_exprs = self.prep_upd_exprs(tgt_columns)
 
         partition_list = get_partition_values(df, self.dt_filter_col, self.dt_from, self.dt_to)
-        
         print(partition_list)
-        ##self.wkf_instance.logger.info(partition_list)
 
+        ##self.wkf_instance.logger.info(partition_list)
         # self.parts_perbatch=1
         for i in range(0, len(partition_list), 1):
             ##start_time = datetime.now()
-
             # self.parts_perbatch=1
             dt_range = partition_list[i : i + 1]
             dt_1, dt_2 = dt_range[0], dt_range[-1]
@@ -59,6 +58,8 @@ class BackfillWkfWorkouts:
             ##df_res = df_res.select([col for col in self.wkf_instance.output_table_schema])
            
             self.sink(df_res, tgt_table, upd_exprs)
+
+            # Check why it is not displayed
             last_operationdf = tgt_table.history(1).select("version", "timestamp", "operation", "operationMetrics")
             print(last_operationdf)
 
@@ -73,7 +74,12 @@ class BackfillWkfWorkouts:
     def upd_column_expr(self, column):
         """
         Returns: column expression for condition update during merge"""
-        return fn.when(self._upd_condition, fn.col(f"source.{column}")).otherwise(fn.col(f"target.{column}"))
+        if self._upd_condition:
+            return fn.when(self._upd_condition, fn.col(f"source.{column}")).otherwise(fn.col(f"target.{column}"))
+        # TODO
+        # to test
+        else:
+            return fn.col(f"source.{column}")
     
     def prep_upd_exprs(self, tgt_columns):
         # E.g. tec_insert_date columns
