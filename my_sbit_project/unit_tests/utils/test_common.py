@@ -1,58 +1,114 @@
 import pytest
-from unittest.mock import MagicMock, mock_open, patch
+import yaml
+import datetime
+from argparse import Namespace
 from pyspark.sql.utils import AnalysisException
-from my_sbit_project.utils.common import DatabricksWorkflow
+from pyspark.sql import SparkSession, functions as fn
+from my_sbit_project.utils.common import ConfigLoader, SqlExecutor, parse_wkf_args, get_partition_values, remove_duplicates
 
-# Dummy concrete class to allow instantiation
-class DummyWorkflow(DatabricksWorkflow):
-    def launch(self):
-        pass
+"""
+Chat Gpt answer: 
 
-    def get_spark_session(self):
-        return MagicMock()
-    
+https://chatgpt.com/c/692f4591-0a50-832a-80ff-3669a1b0d449
+"""
 
 @pytest.fixture
-def init_args():
-    return "LOCAL", "/path_to/fake.yaml"
+def spark():
+    spark = (
+        SparkSession.builder
+        .appName("SbitUnitTests")
+        .master("local[*]")
+        .config("spark.driver.host", "localhost")
+        .config("spark.driver.bindAddress", "127.0.0.1")
+        .config("spark.local.ip", "127.0.0.1")
+        .getOrCreate()
+        )   
+    return spark
 
 
-@patch("builtins.open", new_callable=mock_open, read_data="""
-name: Test App
-features:
-  - login
-  - dashboard
-""")
-def test_read_yaml_WhenFileExists_ReturnsItContent(mock_file, init_args):
-        wkf = DummyWorkflow(env=init_args[0], app_cgf=init_args[1])
+def test_read_config_WithValidYaml_ReturnsParsedContent(mocker):
+    """
+    https://docs.python.org/3/library/unittest.mock.html#patch
 
-        mock_file.assert_called_once_with("/path_to/fake.yaml")
-        assert wkf.app_cfg == {'name': 'Test App', 'features': ['login', 'dashboard']}
+    https://docs.python.org/3/library/unittest.mock.html#mock-open
+    """
+    fake_yaml = "key: value"
+    mk_open = mocker.mock_open(read_data = fake_yaml)
+    mocker.patch("my_sbit_project.utils.common.open", mk_open)
+    mocker.patch("my_sbit_project.utils.common.yaml.safe_load", return_value={"key": "value"})
+
+    result = ConfigLoader._read_yaml("dummy/path.yaml")
+
+    assert result == {"key": "value"}
+    yaml.safe_load.assert_called_once()
+
+def test_read_config_NoYamlFile_RaisesException(mocker):
+    # 1. Mock open() to raise FileNotFoundError
+    mocker.patch("my_sbit_project.utils.common.open", side_effect=FileNotFoundError)
+
+    # 2. Call code and assert that the exception is re-raised
+    with pytest.raises(FileNotFoundError):
+        ConfigLoader._read_yaml("missing.yaml")
+
+def test_run_WithValidSQL_ReturnsResult(mocker):
+    mock_spark = mocker.Mock()
+    mock_result = mocker.Mock()
+    mock_spark.sql.return_value = mock_result
+    executor = SqlExecutor(mock_spark)
+
+    result = executor.run("SELECT 1", in_args={"foo": "bar"})
+
+    assert result == mock_result
+    mock_spark.sql.assert_called_once_with("SELECT 1", args={"foo": "bar"})
+
+def test_run_WithVBadSQL_RaisesException(mocker):
+    mock_spark = mocker.Mock()
+    mock_spark.sql.side_effect = AnalysisException("bad sql")
+    executor = SqlExecutor(mock_spark)
+
+    with pytest.raises(AnalysisException):
+        executor.run("BROKEN SQL")
+
+def test_parse_wkf_args_GivenNamesspace_ReturnsDict():
+    test_namespace = Namespace(foo=1, bar="hello", debug=True)
+    
+    result = parse_wkf_args(test_namespace)
+
+    assert isinstance(result, dict)
+    assert result is not vars(test_namespace)
+    assert result == {"foo": 1, "bar": "hello", "debug": True}
 
 
-def test_read_yaml_WhenFileNotExists_RaisesFileNotFound(init_args):
-    with pytest.raises(FileNotFoundError) as excinfo:
-        wkf = DummyWorkflow(env=init_args[0], app_cgf=init_args[1])
+def test_get_partition_values_GivenDateRange_ReturnsListofDates(spark):
+    test_df = spark.createDataFrame(
+        [(1, "2025-12-01"),
+         (2, "2025-12-04"),
+         (3, "2025-12-10")],
+        ["col_id", "col_date"]
+    ).withColumn("col_date", fn.to_date("col_date"))
+    
+    result = get_partition_values(test_df, "col_date", "2025-11-15", "2025-12-15")
+    
+    assert result == [datetime.date(2025, 12, 1), datetime.date(2025, 12, 4), datetime.date(2025, 12, 10)]
 
+def test_remove_duplicates_OrderingIsString_ReturnsDedupedOrderedByString(spark):
+    test_df = spark.createDataFrame(
+        [(1, "abc", "2025-12-01"),
+         (1, "abc", "2025-12-04")],
+        ["col_id", "col_text", "col_date"]).withColumn("col_date", fn.to_date("col_date"))
+    
+    result = remove_duplicates(test_df, ["col_id", "col_text"], "col_date")
 
-def test_exec_sql_WhenValidQuery_SqlIsExecuted(init_args):
-    with patch.object(DatabricksWorkflow, "read_yaml", return_value={"key": "value"}):
-        wkf = DummyWorkflow(env=init_args[0], app_cgf=init_args[1])
-        wkf.spark.sql = MagicMock()
-        
-        wkf.exec_sql("SELECT * FROM table", {"param": 1})
+    assert result.count() == 1
+    assert result.collect()[0]["col_date"] == datetime.date(2025, 12, 4)
 
-        wkf.spark.sql.assert_called_once_with("SELECT * FROM table", args={"param": 1})
+def test_remove_duplicates_OrderingIsDict_ReturnsDedupedOrderedByDict(spark):
+    test_df = spark.createDataFrame(
+        [(1, "abc", "2025-12-01", 2),
+         (1, "abc", "2025-12-04", 1)],
+        ["col_id", "col_text", "col_date", "col_id_2"]).withColumn("col_date", fn.to_date("col_date"))
+    
+    result = remove_duplicates(test_df, ["col_id", "col_text"], {"col_id_2": "desc", "col_date": "asc"})
 
-
-def test_exec_sql_WhenNotValidQuery_ThrowsAnalysisExcepton(init_args):
-    original_exception = AnalysisException("Table not found")
-
-    with patch.object(DatabricksWorkflow, "read_yaml", return_value={"key": "value"}):
-        wkf = DummyWorkflow(env=init_args[0], app_cgf=init_args[1])
-        wkf.spark.sql = MagicMock()
-        wkf.spark.sql.side_effect = original_exception
-        
-        with pytest.raises(AnalysisException) as excinfo:
-            wkf.exec_sql("SELECT * FROM non_existing_table")
-            
+    assert result.count() == 1
+    assert result.collect()[0]["col_date"] == datetime.date(2025, 12, 1)
