@@ -119,7 +119,7 @@ def remove_duplicates(
         return df.dropDuplicates(subset=unique_cols)
 
 
-def add_missing_columns(df, cols):
+def _add_missing_columns(df, cols):
         pass
 
 def string_to_list(string, sep=","):
