@@ -48,7 +48,7 @@ class SqlExecutor:
             raise
 
 def parse_wkf_args(args: Namespace) -> dict:
-    return vars(args)
+    return dict(vars(args))  # copy of a internal Namespace dict
 
 def from_dict(data_class, data: dict):
     """
@@ -74,26 +74,6 @@ def from_col_mapping_to_select(col_mapping: dict) -> list:
             fn.col(col_info["json_path"]).cast(col_info["col_type"]).alias(col_name)
             for col_name, col_info in col_mapping.items()]
     return select_cols
-
-def _remove_duplicates(df, unique_cols, timestamp_col, order="desc"):
-    """Removes duplicate rows from a Dataframe based on a list of columns to
-    uniquely identify duplicates and a timestamp column to determine the latest row
-    
-            Params:
-                df: input dataframe
-                unique_cols: list of columns to determine uniqueness
-                timestamp_col: tie-breaker timestamp column name
-                order: Default "desc" options[desc|asc]
-            Returns:
-                Dataframe with duplicate rows removed"""
-    
-    order = fn.col(f"{timestamp_col}") if order.lower() != "desc" else fn.col(f"{timestamp_col}").desc()
-
-    win_spec = Window.partitionBy(*unique_cols).orderBy(order)
-    df_with_rwn = df.withColumn("row_number", fn.row_number().over(win_spec))
-
-    return df_with_rwn.filter("row_number = 1").drop("row_number")
-
 
 def remove_duplicates(
     df, 
@@ -156,23 +136,6 @@ def string_to_list(string, sep=","):
     # Escape the separator for regex in case it's a special character (like '.')
     pattern = rf'\s*{re.escape(sep)}\s*'
     return re.split(pattern, string.strip())
-
-def _get_partition_values(df, partition_col, date_from, date_to) -> list:
-    
-        ##filter_expr = (f"CREATION_DATE between DATE('{date_from}') and DATE('{date_to}')")
-        filter_expr = (f"{partition_col} between DATE('{date_from}') and DATE('{date_to}')")
-
-        print(f"Date from: {date_from} and {date_to}")
-        print(f"Filter expression: {filter_expr}")
-
-        return (
-        df.select(fn.col(partition_col))
-            .distinct()
-            .where(filter_expr)
-            .orderBy(fn.col(partition_col))
-            .rdd.map(lambda x: x[0])
-            .collect()
-        )
 
 def get_partition_values(df, partition_col, date_from, date_to) -> list:
     

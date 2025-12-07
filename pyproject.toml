@@ -1,6 +1,6 @@
 [project]
 name = "my_sbit_project"
-version = "1.2.6"
+version = "1.2.7"
 description = "My end to end Azure and Databricks project"
 authors = [
     {name = "StephanKnox",email = "stanislav.i.kulchitskiy@gmail.com"}
@@ -11,7 +11,8 @@ dependencies = [
     "pyyaml (>=6.0.2,<7.0.0)",
     "pyspark (==3.5.2)",
     "pytest (>=8.4.1,<9.0.0)",
-    "delta-spark (==3.2.0)"
+    "delta-spark (==3.2.0)",
+    "pytest-mock (>=3.15.1,<4.0.0)"
 ]
 
 
