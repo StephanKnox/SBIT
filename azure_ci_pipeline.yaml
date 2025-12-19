@@ -13,10 +13,8 @@ steps:
   # ----------------------------
   # Checkout
   # ----------------------------
-  - task: Checkout@1
-    displayName: 'Checkout repository'
-    inputs:
-      clean: true
+  - checkout: self
+    clean: true
 
   # ----------------------------
   # Set Python (DBR 16.4 LTS uses Python 3.10)
