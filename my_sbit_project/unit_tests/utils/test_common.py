@@ -4,7 +4,7 @@ import datetime
 from argparse import Namespace
 from pyspark.sql.utils import AnalysisException
 from pyspark.sql import SparkSession, functions as fn
-from my_sbit_project.utils.common import ConfigLoader, SqlExecutor, parse_wkf_args, get_partition_values, remove_duplicates
+from my_sbit_project.utils.common import ConfigLoader, SqlExecutor, parse_wkf_args, get_dates_from_df, remove_duplicates
 
 """
 Chat Gpt answer: 
@@ -12,18 +12,25 @@ Chat Gpt answer:
 https://chatgpt.com/c/692f4591-0a50-832a-80ff-3669a1b0d449
 """
 
-@pytest.fixture
-def spark():
-    spark = (
-        SparkSession.builder
-        .appName("SbitUnitTests")
-        .master("local[*]")
-        .config("spark.driver.host", "localhost")
-        .config("spark.driver.bindAddress", "127.0.0.1")
-        .config("spark.local.ip", "127.0.0.1")
-        .getOrCreate()
-        )   
-    return spark
+#@pytest.fixture(scope="session")
+#def spark():
+#    return SparkSession.builder \
+#        .master("local[*]") \
+#        .appName("unit-tests") \
+#        .getOrCreate()
+
+##@pytest.fixture(scope="session")
+##def spark():
+##    spark = (
+##        SparkSession.builder
+##        .appName("SbitUnitTests")
+##        .master("local[*]")
+##        .config("spark.driver.host", "localhost")
+##       .config("spark.driver.bindAddress", "127.0.0.1")
+##        .config("spark.local.ip", "127.0.0.1")
+##        .getOrCreate()
+##        )   
+##    return spark
 
 
 def test_read_config_WithValidYaml_ReturnsParsedContent(mocker):
@@ -79,7 +86,7 @@ def test_parse_wkf_args_GivenNamesspace_ReturnsDict():
     assert result == {"foo": 1, "bar": "hello", "debug": True}
 
 
-def test_get_partition_values_GivenDateRange_ReturnsListofDates(spark):
+def test_get_dates_from_df_GivenDateRange_ReturnsListofDates(spark):
     test_df = spark.createDataFrame(
         [(1, "2025-12-01"),
          (2, "2025-12-04"),
@@ -87,9 +94,21 @@ def test_get_partition_values_GivenDateRange_ReturnsListofDates(spark):
         ["col_id", "col_date"]
     ).withColumn("col_date", fn.to_date("col_date"))
     
-    result = get_partition_values(test_df, "col_date", "2025-11-15", "2025-12-15")
+    result = get_dates_from_df(test_df, "col_date", "2025-11-15", "2025-12-15")
     
     assert result == [datetime.date(2025, 12, 1), datetime.date(2025, 12, 4), datetime.date(2025, 12, 10)]
+
+def test_get_dates_from_df_GivenOneDate_ReturnsListOfOne(spark):
+    test_df = spark.createDataFrame(
+        [(1, "2025-12-01"),
+         (2, "2025-12-04"),
+         (3, "2025-12-10")],
+        ["col_id", "col_date"]
+    ).withColumn("col_date", fn.to_date("col_date"))
+    
+    result = get_dates_from_df(test_df, "col_date", "2025-12-01", "2025-12-01")
+    
+    assert result == [datetime.date(2025, 12, 1)]
 
 def test_remove_duplicates_OrderingIsString_ReturnsDedupedOrderedByString(spark):
     test_df = spark.createDataFrame(

@@ -137,8 +137,10 @@ def string_to_list(string, sep=","):
     pattern = rf'\s*{re.escape(sep)}\s*'
     return re.split(pattern, string.strip())
 
-def get_partition_values(df, partition_col, date_from, date_to) -> list:
-    
+def get_dates_from_df(df, partition_col, date_from, date_to) -> list:
+    """
+    Args:
+    """
     filter_expr = (
         f"{partition_col} between DATE('{date_from}') and DATE('{date_to}')"
     )
