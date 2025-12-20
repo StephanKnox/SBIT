@@ -21,7 +21,7 @@ steps:
   # ----------------------------
   - script: |
       source /Users/ctac/Library/Caches/pypoetry/virtualenvs/my-sbit-project-eXtul0LL-py3.11/bin/activate
-      poetry run pytest --junitxml=pytest_results.xml --cov=. --cov-report=xml --maxfail=1 -q
+      pytest --junitxml=pytest_results.xml --cov=. --cov-report=xml --maxfail=1 -q
     displayName: 'Run PySpark unit tests'
 
   # ----------------------------
