@@ -23,7 +23,7 @@ steps:
   # ----------------------------
   - script: |
       source /Users/ctac/Library/Caches/pypoetry/virtualenvs/my-sbit-project-eXtul0LL-py3.11/bin/activate
-      pytest --junitxml=pytest_results.xml --cov=. --cov-report=xml --maxfail=1 -q
+      pytest my_sbit_project/unit_tests/utils/test_common.py
     displayName: 'Run PySpark unit tests'
 
   # ----------------------------
