@@ -17,50 +17,6 @@ steps:
     clean: true
 
   # ----------------------------
-  # Set Python (DBR 16.4 LTS uses Python 3.10)
-  # ----------------------------
-  - task: UsePythonVersion@0
-    displayName: 'Set Python version'
-    inputs:
-      versionSpec: '$(pythonVersion)'
-      addToPath: true
-
-  # ----------------------------
-  # Install system dependencies
-  # ----------------------------
-  - script: |
-      python -m pip install --upgrade pip
-      pip install poetry
-    displayName: 'Install pip & poetry'
-
-  # ----------------------------
-  # Poetry cache
-  # ----------------------------
-  - task: Cache@2
-    displayName: 'Cache Poetry virtualenv'
-    inputs:
-      key: 'poetry|$(Agent.OS)|poetry.lock'
-      path: '~/.cache/pypoetry'
-      restoreKeys: |
-        poetry|$(Agent.OS)
-
-  # ----------------------------
-  # Install dependencies using poetry
-  # ----------------------------
-  - script: |
-      poetry config virtualenvs.in-project true
-      poetry install --no-interaction --no-root
-    displayName: 'Install Poetry dependencies'
-
-  # ----------------------------
-  # Install PySpark (DBR runtime compatible)
-  # Databricks 16.x ≈ Spark 3.5.x
-  # ----------------------------
-  - script: |
-      poetry run pip install pyspark==3.5.2
-    displayName: 'Install PySpark'
-
-  # ----------------------------
   # Run unit tests with pytest
   # ----------------------------
   - script: |
