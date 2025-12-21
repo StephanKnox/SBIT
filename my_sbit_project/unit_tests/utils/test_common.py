@@ -12,27 +12,6 @@ Chat Gpt answer:
 https://chatgpt.com/c/692f4591-0a50-832a-80ff-3669a1b0d449
 """
 
-#@pytest.fixture(scope="session")
-#def spark():
-#    return SparkSession.builder \
-#        .master("local[*]") \
-#        .appName("unit-tests") \
-#        .getOrCreate()
-
-##@pytest.fixture(scope="session")
-##def spark():
-##    spark = (
-##        SparkSession.builder
-##        .appName("SbitUnitTests")
-##        .master("local[*]")
-##        .config("spark.driver.host", "localhost")
-##       .config("spark.driver.bindAddress", "127.0.0.1")
-##        .config("spark.local.ip", "127.0.0.1")
-##        .getOrCreate()
-##        )   
-##    return spark
-
-
 def test_read_config_WithValidYaml_ReturnsParsedContent(mocker):
     """
     https://docs.python.org/3/library/unittest.mock.html#patch
