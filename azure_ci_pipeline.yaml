@@ -4,87 +4,32 @@ trigger:
       - main
 
 pool:
-  name: Default   # self-hosted agent
-
-variables:
-  pythonVersion: '3.10'
+  name: Default
 
 steps:
-  # ----------------------------
-  # Checkout
-  # ----------------------------
   - checkout: self
     clean: true
 
-  # ----------------------------
-  # Ensure Python is available
-  # (On self-hosted agent, this mainly sets PATH)
-  # ----------------------------
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(pythonVersion)'
-      addToPath: true
-    displayName: 'Use Python $(pythonVersion)'
-
-  # ----------------------------
-  # Install Poetry
-  # ----------------------------
   - script: |
-      python -m pip install --upgrade pip
-      pip install poetry
-    displayName: 'Install Poetry'
-
-  # ----------------------------
-  # Install dependencies
-  # ----------------------------
-  - script: |
-      poetry config virtualenvs.in-project true
+      python3 --version
+      poetry --version
       poetry install --no-interaction
-    displayName: 'Install dependencies with Poetry'
-
-  # ----------------------------
-  # Run unit tests with coverage
-  # ----------------------------
-  - script: |
       poetry run pytest \
         --cov=my_sbit_project \
         --cov-report=xml \
         --cov-report=term \
         --junitxml=pytest_results.xml
-    displayName: 'Run PySpark unit tests with coverage'
+    displayName: 'Run unit tests with coverage'
 
-  # ----------------------------
-  # Publish test results
-  # ----------------------------
   - task: PublishTestResults@2
     displayName: 'Publish pytest results'
     condition: succeededOrFailed()
     inputs:
       testResultsFiles: '**/pytest_results.xml'
-      mergeTestResults: true
 
-  # ----------------------------
-  # Publish code coverage
-  # ----------------------------
   - task: PublishCodeCoverageResults@2
-    displayName: 'Publish code coverage'
+    displayName: 'Publish coverage'
     condition: succeededOrFailed()
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: 'coverage.xml'
-
-  # ----------------------------
-  # Build wheel
-  # ----------------------------
-  - script: |
-      poetry build -f wheel
-    displayName: 'Build wheel'
-
-  # ----------------------------
-  # Publish wheel artifact
-  # ----------------------------
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish wheel artifact'
-    inputs:
-      pathToPublish: 'dist'
-      artifactName: 'python-wheel'
