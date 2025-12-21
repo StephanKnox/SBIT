@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  name: Default
+  name: Default   # self-hosted agent
 
 variables:
   pythonVersion: '3.10'
@@ -17,10 +17,35 @@ steps:
     clean: true
 
   # ----------------------------
+  # Ensure Python is available
+  # (On self-hosted agent, this mainly sets PATH)
+  # ----------------------------
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(pythonVersion)'
+      addToPath: true
+    displayName: 'Use Python $(pythonVersion)'
+
+  # ----------------------------
+  # Install Poetry
+  # ----------------------------
+  - script: |
+      python -m pip install --upgrade pip
+      pip install poetry
+    displayName: 'Install Poetry'
+
+  # ----------------------------
+  # Install dependencies
+  # ----------------------------
+  - script: |
+      poetry config virtualenvs.in-project true
+      poetry install --no-interaction
+    displayName: 'Install dependencies with Poetry'
+
+  # ----------------------------
   # Run unit tests with coverage
   # ----------------------------
   - script: |
-      source /Users/ctac/Library/Caches/pypoetry/virtualenvs/my-sbit-project-eXtul0LL-py3.11/bin/activate
       poetry run pytest \
         --cov=my_sbit_project \
         --cov-report=xml \
@@ -47,3 +72,19 @@ steps:
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: 'coverage.xml'
+
+  # ----------------------------
+  # Build wheel
+  # ----------------------------
+  - script: |
+      poetry build -f wheel
+    displayName: 'Build wheel'
+
+  # ----------------------------
+  # Publish wheel artifact
+  # ----------------------------
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish wheel artifact'
+    inputs:
+      pathToPublish: 'dist'
+      artifactName: 'python-wheel'
