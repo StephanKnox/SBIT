@@ -28,8 +28,18 @@ steps:
   # Publish test results
   # ----------------------------
   - task: PublishTestResults@2
+    displayName: 'Publish pytest results'
+    condition: succeededOrFailed()
     inputs:
       testResultsFiles: '**/pytest_results.xml'
       mergeTestResults: true
+
+  # ----------------------------
+  # Publish code coverage
+  # ----------------------------
+  - task: PublishCodeCoverageResults@2
+    displayName: 'Publish code coverage'
     condition: succeededOrFailed()
-    displayName: 'Publish pytest test results'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: 'coverage.xml'
