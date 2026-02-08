@@ -43,13 +43,8 @@ class UserInfoLoader(DatabricksStreamingMixin, DatabricksWorkflow):
         self.sink_options = self.job_cfg.sink.options
         self.streaming_options = {}
 
-    def __repr__(self):
-        return "\n".join([f"{k}={v}" for k,v in self.__dict__.items()])
-
     def launch(self):
         """TO DO"""
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
         print(f"Date Loader mapping {date_loader_cols_mapping}")
 
         ## TO DO: Where to put streaming options? and how?

@@ -26,4 +26,6 @@ class DatabricksWorkflow(ABC):
 
     ##@abstractmethod
     ##def launch(self):
+    """Not abstract as not to force implementation in GenericUpserter.py
+       where it is best suited to be declared abstract"""
     ##    pass

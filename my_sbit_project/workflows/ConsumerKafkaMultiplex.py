@@ -50,12 +50,7 @@ class ConsumerKafkaMultiplex(DatabricksStreamingMixin, DatabricksWorkflow):
         .start()
         .awaitTermination()
         )
-    
-    #def parse_df(self, df: DataFrame) -> DataFrame:
-    #   select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-    #    df_parsed = df.select(*select_cols)
-        
-    #    return df_parsed
+
     def enrich_df(self, df: DataFrame) -> DataFrame:
         df_date_lookup = (self.spark.table(f"{self.env}.sbit_db.date_lookup")
                           .select("date", "week_part"))
@@ -64,3 +59,4 @@ class ConsumerKafkaMultiplex(DatabricksStreamingMixin, DatabricksWorkflow):
                               [fn.to_date((fn.col("timestamp")).cast("timestamp")) == fn.col("date")], 
                               "left")
         return df_enriched
+    

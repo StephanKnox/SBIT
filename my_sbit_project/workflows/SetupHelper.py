@@ -2,7 +2,8 @@ import time
 from my_sbit_project.utils.workflow import DatabricksWorkflow
 
 
-class SetupHelper(DatabricksWorkflow):   
+class SetupHelper(DatabricksWorkflow): 
+      
     def __init__(self, **kwargs):      
         super().__init__(**kwargs)
         self.initialized = False

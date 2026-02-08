@@ -11,7 +11,7 @@ class GenericBackfillWkf:
         self.dt_to = kwargs.get("dt_to")
         self.dt_filter_col = kwargs.get("dt_filter_col")
         # TODO
-        # Set in GenericUpseerter and dataclass schema
+        # Set in GenericUpserter and dataclass schema
         self._upd_condition = None
 
         

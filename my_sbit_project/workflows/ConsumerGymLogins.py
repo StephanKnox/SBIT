@@ -45,10 +45,5 @@ class ConsumerGymLogins(DatabricksStreamingMixin, DatabricksWorkflow):
         .start()
         .awaitTermination()
         )
-    
-    #def parse_df(self, df: DataFrame) -> DataFrame:
-    #    select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-    #    df_parsed = df.select(*select_cols)
-        
-    #    return df_parsed
+
     

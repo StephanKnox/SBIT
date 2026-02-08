@@ -2,11 +2,12 @@ import re
 from argparse import Namespace
 import yaml
 from dataclasses import is_dataclass, fields
-from pyspark.sql import Window, SparkSession, functions as fn, Column
+from pyspark.sql import Window, SparkSession, functions as fn, DataFrame
 from pyspark.sql.utils import AnalysisException
 
 
 class ConfigLoader:
+
     @staticmethod
     def _read_yaml(cfg_file):
         """Read configuration yaml"""
@@ -22,11 +23,11 @@ class ConfigLoader:
 
     @staticmethod
     def read_config(cfg_file) -> dict:
-        # TODO: handle exception here or in _read_yaml ?
         return ConfigLoader._read_yaml(cfg_file)
     
 
 class SparkSessionFactory:
+
     @staticmethod
     def create(app_name, env) -> SparkSession:
         builder = SparkSession.builder.appName(app_name)
@@ -36,6 +37,7 @@ class SparkSessionFactory:
 
 
 class SqlExecutor:
+
     def __init__(self, spark):
         self.spark = spark
 
@@ -80,7 +82,7 @@ def remove_duplicates(
     unique_cols, 
     ordering=None, 
     default_order="desc"
-):
+) -> DataFrame:
     """
     Removes duplicate rows from a DataFrame based on columns that determine uniqueness
     and one or more ordering columns that define which record to keep.
@@ -118,11 +120,7 @@ def remove_duplicates(
     else:
         return df.dropDuplicates(subset=unique_cols)
 
-
-def _add_missing_columns(df, cols):
-        pass
-
-def string_to_list(string, sep=","):
+def string_to_list(string, sep=",") -> list:
     """
     Splits a string into a list by the given separator, ignoring spaces around separators.
     
