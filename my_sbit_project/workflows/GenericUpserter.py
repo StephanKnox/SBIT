@@ -20,23 +20,28 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         self.source_options = self.job_cfg.source.options
         self.source_filter = self.job_cfg.source.filter
         watermark = self.job_cfg.source.watermark
+
         if watermark:
             self.watermark_eventtime = watermark.get("event_time")
             self.watermark_delay = watermark.get("delay")
         else:
             self.watermark_eventtime = None
             self.watermark_delay = None
+
         # Sink
         self.sink_target = f"{self.env}.{self.job_cfg.sink.target}"
         self.sink_trigger = self.job_cfg.sink.trigger
         self.sink_options = self.job_cfg.sink.options
+
         # Streaming  
         streaming_options = self.job_cfg.streaming_options.options
+
         # Merging
         merge_details = self.job_cfg.params.merge
         self.merge_condition = merge_details.get("merge_condition")
         self.merge_upd_condition = merge_details.get("update_condition")
         self.delete_whenmatched = merge_details.get("delete_whenmatched", False)
+
         # Deduplication
         deduplication_details = self.job_cfg.params.deduplication
         if deduplication_details:
@@ -49,31 +54,10 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
     @abstractmethod
     def launch(self):
         pass
-        ###df = self.transform_df(df)
-        
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        ##print(self)
 
-        ## read source
-        ##df_source = self.read_deltatable_source()
-        ##if self.watermark_eventtime:
-        ##    df_source.withWatermark(self.watermark_eventtime, self.watermark_delay)
-
-        ##(
-        ##df_source.writeStream
-        ##.trigger(**self.sink_trigger)
-        ##.queryName(self.app_name)
-        ##.options(**self.sink_options)
-        ##.foreachBatch(lambda df, epoch_id: self.upsert(df, epoch_id))
-        ##.start()
-        ##.awaitTermination()
-        ##)
-    
-    ##def parse_df(self, df: DataFrame) -> DataFrame:
-    ##    select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-    ##     
-    ##    df_parsed = df.select(*select_cols)
-    ##    return df_parsed
+    @abstractmethod
+    def enrich_df(self, df) -> DataFrame:
+        pass
     
     def upsert(self, df, epoch_id):
         ##from delta.Tables import delta
@@ -81,22 +65,16 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         print(f"Starting to process epoch_id {epoch_id}")
 
         start_time = time.time()
-        ##df_parsed = self.enrich_df(df)
 
         if self.unique_cols:
             df = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols)
 
         target_table = DeltaTable.forName(self.spark, self.sink_target)
         target_columns = target_table.toDF().columns
-        
-        # TODO needed? add to common.py
-        ##df_parsed = add_missing_columns(df_parsed, target_columns)
 
-        # TODO replace or remove
-        default_update_exprs = {
-            ##"target.CER_LAST_UPDATED_DATE": fn.col("source.CER_CREATION_DATE"),
-            ##"target.CER_LAST_UPDATED_BY": fn.col("source.CER_CREATED_BY")
-        }
+        # For columns that cant be mapped by name, e.g.: 
+        # target.LAST_UPDATED_DATE: fn.col("source.SBIT_CREATION_DATE")
+        default_update_exprs = {}
 
         update_exprs = {}
         for col in target_columns:
@@ -152,7 +130,5 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
     ##    df_enriched = df.selectExpr("user_id", "device_id", "mac_address", "cast(registration_timestamp as timestamp)")
     ##    return df_enriched
 
-    @abstractmethod
-    def enrich_df(self, df) -> DataFrame:
-        pass
+    
 

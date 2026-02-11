@@ -3,6 +3,7 @@ from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 
 
 class UpserterCompletedWorkouts(GenericUpserter):
+    
     def enrich_df(self, df_start) -> DataFrame:
         df_start = df_start.selectExpr("user_id", "workout_id", "session_id", "time as start_time")
 
@@ -20,12 +21,7 @@ class UpserterCompletedWorkouts(GenericUpserter):
         return df_enriched
     
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
-
-        # read source
         df_source = self.read_deltatable_source(self.source_filter)
-
         df_enriched = self.enrich_df(df_source)
 
         if self.watermark_eventtime:

@@ -3,6 +3,7 @@ from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 
 
 class UpserterWorkoutBpm(GenericUpserter):
+    
     def enrich_df(self, df_input ) -> DataFrame:
         df_users = self.spark.read.table(f"{self.env}.sbit_db.users")
         df_completed_workouts = (df_input
@@ -29,12 +30,7 @@ class UpserterWorkoutBpm(GenericUpserter):
         return df_enriched
     
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
-
-        # read source
         df_source = self.read_deltatable_source(self.source_filter)
-
         df_enriched = self.enrich_df(df_source)
 
         if self.watermark_eventtime:

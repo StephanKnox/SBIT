@@ -36,7 +36,6 @@ class ConsumerUserRegistrations(DatabricksStreamingMixin, DatabricksWorkflow):
         # add metadata columns
         df_source = self.add_file_meta_columns(df_source)
 
-        # TODO parsing is not needed?
         (
         df_source.writeStream
         .trigger(**self.sink_trigger)
@@ -46,9 +45,3 @@ class ConsumerUserRegistrations(DatabricksStreamingMixin, DatabricksWorkflow):
         .start()
         .awaitTermination()
         )
-    
-    #def parse_df(self, df: DataFrame) -> DataFrame:
-    #    select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-    #    df_parsed = df.select(*select_cols)
-        
-    #    return df_parsed

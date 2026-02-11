@@ -33,10 +33,7 @@ class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
         self.sink_target= self.job_cfg.sink.target
         self.sink_trigger = self.job_cfg.sink.trigger
         self.sink_options = self.job_cfg.sink.options
-        # Streaming  
-        streaming_options = self.job_cfg.streaming.options
-        
-
+    
     def launch(self):
         print(self)
 
@@ -58,3 +55,4 @@ class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
          
         df_parsed = df.select(*select_cols)
         return df_parsed
+    

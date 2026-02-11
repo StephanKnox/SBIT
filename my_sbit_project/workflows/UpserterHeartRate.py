@@ -13,7 +13,8 @@ json_schema = StructType([
 
 
 class UpserterHeartRate(GenericUpserter):
-    def enrich_df(self, input_df):
+
+    def enrich_df(self, input_df)-> DataFrame:
         df_enriched = (
             input_df
             .withColumn("valid", fn.when(fn.col("heartrate") <= 0, False).otherwise(True))
@@ -21,12 +22,7 @@ class UpserterHeartRate(GenericUpserter):
         return df_enriched
     
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
-
-        # read source
         df_source = self.read_deltatable_source(self.source_filter)
-
         df_parsed = self.parse_df(df_source)
 
         df_parsed = self.enrich_df(df_parsed)
@@ -36,7 +32,7 @@ class UpserterHeartRate(GenericUpserter):
 
         self.stream_upsert(df_parsed)
 
-    def parse_df(self, df: DataFrame) -> DataFrame:
+    def parse_df(self, df) -> DataFrame:
         select_cols = from_col_mapping_to_select(bpm_cols_mapping)
         df = df.withColumn("parsedJson", 
                            fn.from_json(fn.col("value").cast("string"), json_schema))

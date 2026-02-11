@@ -46,7 +46,6 @@ class DatabricksStreamingMixin:
         return df
     
     def stream_upsert(self, df):
-        
         (
         df.writeStream
         .trigger(**self.sink_trigger)

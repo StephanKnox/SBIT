@@ -34,9 +34,9 @@ def main():
     workflow_class = getattr(module, app.split('.')[-1])
     workflow_instance = workflow_class(**parse_wkf_args(known_args))
 
-    # Launch the workflow with error handling
+    # Launch the workflow
     try:
-        #print(workflow_instance)
+        print(workflow_instance)
         workflow_instance.launch()
     except Exception as err:
         #err_msg = f'{err=}, {type(err)=} {traceback.format_exc()}'
