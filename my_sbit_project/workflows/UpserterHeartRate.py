@@ -3,6 +3,7 @@ from pyspark.sql.types import StructField, StructType, LongType, TimestampType, 
 from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 from my_sbit_project.utils.common import from_col_mapping_to_select
 from my_sbit_project.utils.mapping import bpm_cols_mapping
+from my_sbit_project.logging.common import databricks_job_runner
 
 
 json_schema = StructType([
@@ -20,9 +21,10 @@ class UpserterHeartRate(GenericUpserter):
         )
         return df_enriched
     
+    @databricks_job_runner
     def launch(self):
         #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
+        self.logger.info(repr(self))
 
         # read source
         df_source = self.read_deltatable_source(self.source_filter)

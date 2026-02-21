@@ -15,10 +15,10 @@ class ConfigLoader:
                 config = yaml.safe_load(cfg)    
             return config
         except FileNotFoundError as e:
-            # TO DO: replace prints with logging
-            print(f"""YAML file was not found at {cfg_file} or you dont have permissions
-                  to access it""")
-            raise
+            raise FileNotFoundError(
+                f"YAML file was not found at {cfg_file} or you don't have permissions "
+                "to access it"
+            ) from e
 
     @staticmethod
     def read_config(cfg_file) -> dict:
@@ -43,9 +43,7 @@ class SqlExecutor:
         try:
             return self.spark.sql(sql_stmt, args=in_args)
         except AnalysisException as e:
-            # TODO: replace print with logging
-            print(f"SQL execution failed: {sql_stmt}")
-            raise
+            raise AnalysisException(f"SQL execution failed: {sql_stmt}") from e
 
 def parse_wkf_args(args: Namespace) -> dict:
     return dict(vars(args))  # copy of a internal Namespace dict

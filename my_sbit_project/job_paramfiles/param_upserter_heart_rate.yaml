@@ -18,3 +18,10 @@ job_config:
       merge_condition: "target.device_id = source.device_id AND target.time = source.time"
     deduplication:
       unique_cols: device_id, time
+  logging:
+    min_level: "INFO"
+    handlers:
+      - "console"
+      - "delta_table"
+    options:
+      delta_table: "sbit_db.job_logs"

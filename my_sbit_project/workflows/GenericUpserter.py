@@ -77,8 +77,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
     
     def upsert(self, df, epoch_id):
         ##from delta.Tables import delta
-        # TODO self.logger.info(f"Starting to process epoch_id {epoch_id}")
-        print(f"Starting to process epoch_id {epoch_id}")
+        self.logger.info(f"Starting to process epoch_id {epoch_id}")
 
         start_time = time.time()
         ##df_parsed = self.enrich_df(df)
@@ -111,7 +110,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
 
         self.merge(df, target_table, update_exprs)
 
-        print(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
+        self.logger.info(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 
         # TODO, retry functionality
         # if multiple jobs merge to the same table, merge with retries

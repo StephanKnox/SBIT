@@ -4,6 +4,7 @@ from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 from my_sbit_project.utils.constants import address_struct
 from my_sbit_project.utils.common import from_col_mapping_to_select
 from my_sbit_project.utils.mapping import user_profiles_cols_mapping
+from my_sbit_project.logging.common import databricks_job_runner
 
 
 json_schema = StructType([
@@ -34,9 +35,10 @@ class UpserterUserProfiles(GenericUpserter):
                            #    F.col('timestamp').cast("timestamp").alias("updated"),
                             #   "update_type")
     
+    @databricks_job_runner
     def launch(self):
         #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        print(self)
+        self.logger.info(repr(self))
 
         # read source
         df_source = self.read_deltatable_source(self.source_filter)
