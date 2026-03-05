@@ -1,11 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import is_dataclass
 from my_sbit_project.utils.common import ConfigLoader, SparkSessionFactory, SqlExecutor, from_dict
-from my_sbit_project.logging.LogLevel import LogLevel
-from my_sbit_project.logging.SparkJobLogger import SparkJobLogger
-from my_sbit_project.logging.ConsoleLogHandler import ConsoleLogHandler
-from my_sbit_project.logging.DeltaLogHandler import DeltaLogHandler
-from my_sbit_project.logging.context import DatabricksContextResolver, JobContext
+from my_sbit_project.logging import (
+    LogLevel, 
+    SparkJobLogger,
+    ConsoleLogHandler,
+    DeltaLogHandler,
+    DatabricksContextResolver,
+    JobContext)
+
 
 class DatabricksWorkflow(ABC):
     def __init__(self, **kwargs):
@@ -18,6 +21,7 @@ class DatabricksWorkflow(ABC):
 
         # Parse job_config if subclass declares a dataclass
         job_cfg_dict = self.app_cfg.get("job_config", {})
+        
         if self.job_config_class is not None:
             if not is_dataclass(self.job_config_class):
                 raise TypeError("job_config_class must be a dataclass")
@@ -79,7 +83,3 @@ class DatabricksWorkflow(ABC):
             min_level=min_level,
             spark=self.spark,
         )
-
-    ##@abstractmethod
-    ##def launch(self):
-    ##    pass

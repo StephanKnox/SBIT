@@ -49,38 +49,10 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
     @abstractmethod
     def launch(self):
         pass
-        ###df = self.transform_df(df)
-        
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
-        ##print(self)
-
-        ## read source
-        ##df_source = self.read_deltatable_source()
-        ##if self.watermark_eventtime:
-        ##    df_source.withWatermark(self.watermark_eventtime, self.watermark_delay)
-
-        ##(
-        ##df_source.writeStream
-        ##.trigger(**self.sink_trigger)
-        ##.queryName(self.app_name)
-        ##.options(**self.sink_options)
-        ##.foreachBatch(lambda df, epoch_id: self.upsert(df, epoch_id))
-        ##.start()
-        ##.awaitTermination()
-        ##)
-    
-    ##def parse_df(self, df: DataFrame) -> DataFrame:
-    ##    select_cols = from_col_mapping_to_select(date_loader_cols_mapping)
-    ##     
-    ##    df_parsed = df.select(*select_cols)
-    ##    return df_parsed
     
     def upsert(self, df, epoch_id):
-        ##from delta.Tables import delta
         self.logger.info(f"Starting to process epoch_id {epoch_id}")
-
         start_time = time.time()
-        ##df_parsed = self.enrich_df(df)
 
         if self.unique_cols:
             df = remove_duplicates(df, self.unique_cols, self.tiebreaker_cols)
@@ -88,9 +60,6 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         target_table = DeltaTable.forName(self.spark, self.sink_target)
         target_columns = target_table.toDF().columns
         
-        # TODO needed? add to common.py
-        ##df_parsed = add_missing_columns(df_parsed, target_columns)
-
         # TODO replace or remove
         default_update_exprs = {
             ##"target.CER_LAST_UPDATED_DATE": fn.col("source.CER_CREATION_DATE"),
@@ -134,8 +103,6 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         ##self.logger.info(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 
     def merge(self, df_source, target_table, update_exprs):
-        #from delta.Tables import DeltaTable
-        ##target_table = DeltaTable.forName(self.spark, self.sink_target)
 
         if not self.delete_whenmatched:
             (target_table.alias("target").merge(df_source.alias("source"), self.merge_condition)
@@ -146,12 +113,6 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
                 .whenMatchedDelete().execute() )
             df_source.write.format("delta").mode("append").insertInto(self.sink_target)
 
-    # TODO: how to implement parsing as well as upsert?
-    ##def enrich_df(self, df: DataFrame) -> DataFrame:
-    ##    df_enriched = df.selectExpr("user_id", "device_id", "mac_address", "cast(registration_timestamp as timestamp)")
-    ##    return df_enriched
-
     @abstractmethod
     def enrich_df(self, df) -> DataFrame:
         pass
-

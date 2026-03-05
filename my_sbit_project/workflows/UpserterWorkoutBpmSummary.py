@@ -21,16 +21,11 @@ class UpserterWorkoutBpmSummary(GenericUpserter):
     
     @databricks_job_runner
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         self.logger.info(repr(self))
 
         # read source
         df_source = self.read_deltatable_source()
 
         df_enriched = self.enrich_df(df_source)
- 
-
-        #if self.watermark_eventtime:
-        #    df_enriched = df_enriched.withWatermark(self.watermark_eventtime, self.watermark_delay)
 
         self.stream_upsert(df_enriched)

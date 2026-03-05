@@ -37,7 +37,6 @@ class ConsumerGymLogins(DatabricksStreamingMixin, DatabricksWorkflow):
         # add metadata columns
         df_source = self.add_file_meta_columns(df_source)
 
-        # TODO parsing is not needed?
         (
         df_source.writeStream
         .trigger(**self.sink_trigger)

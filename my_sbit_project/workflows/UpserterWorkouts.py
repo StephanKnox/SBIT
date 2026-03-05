@@ -25,7 +25,6 @@ class UpserterWorkouts(GenericUpserter):
     
     @databricks_job_runner
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         self.logger.info(repr(self))
 
         # read source
@@ -47,8 +46,3 @@ class UpserterWorkouts(GenericUpserter):
          
         df_parsed = df.select(*select_cols)
         return df_parsed
-    
-
-    ["--env","DEV",
-     "--app_cfg","/Volumes/dev/param/job_params/param_upserter_workouts.yaml",
-     "--app","UpserterWorkouts"]

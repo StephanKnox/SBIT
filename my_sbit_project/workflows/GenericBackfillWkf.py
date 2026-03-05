@@ -28,42 +28,27 @@ class GenericBackfillWkf:
         partition_list = get_partition_values(df, self.dt_filter_col, self.dt_from, self.dt_to)
         print(partition_list)
 
-        ##self.wkf_instance.logger.info(partition_list)
-        # self.parts_perbatch=1
         for i in range(0, len(partition_list), 1):
-            ##start_time = datetime.now()
-            # self.parts_perbatch=1
             dt_range = partition_list[i : i + 1]
             dt_1, dt_2 = dt_range[0], dt_range[-1]
 
             filter_expr = fn.expr(f"{self.dt_filter_col} BETWEEN DATE('{dt_1}') AND DATE('{dt_2}')")
-
-            ##self.wkf_instance.logger.info(f"{datetime.now()} Processing dates: [{dt_1} : {dt_2}]")
-
             df_filtered = df.where(filter_expr)
-            ##df_filtered = self.custom_backfill_filter(df_filtered)
 
             if df_filtered.isEmpty():
-                ##self.wkf_instance.logger.info(f"DF row count is 0 after {filter_expr} and custom_backfill_filter()")
                 print(f"DF row count is 0 after {filter_expr} and custom_backfill_filter()")
                 continue
 
-            #if hasattr(self.wkf_instance, "parse_df"):
             if callable(getattr(self.wkf_instance, "parse_df", None)):
                 df_filtered = self.parse_df(df_filtered)
 
             df_res = self.enrich_df(df_filtered)
 
-            ##df_res = add_missing_columns(df_res, self.wkf_instance.output_table_schema)
-            ##df_res = df_res.select([col for col in self.wkf_instance.output_table_schema])
-           
             self.sink(df_res, tgt_table, upd_exprs)
 
-            # Check why it is not displayed
             last_operationdf = tgt_table.history(1).select("version", "timestamp", "operation", "operationMetrics")
             print(last_operationdf)
 
-            ##self.wkf_instance.logger.info(f"{datetime.now()} Insert execution time: {datetime.now() - start_time}")
 
     def read_source(self, filter_stmt=None) -> DataFrame:
         df_source = self.wkf_instance.spark.read.table(self.wkf_instance.source_path)
@@ -97,8 +82,6 @@ class GenericBackfillWkf:
 
 
     def sink(self, df, tgt_table, upd_exprs):
-        # TODO
-        # implement merge in batch mode
         if self.wkf_instance.unique_cols:
             df = remove_duplicates(df, self.wkf_instance.unique_cols, self.wkf_instance.tiebreaker_cols)
         

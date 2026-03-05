@@ -42,7 +42,6 @@ class ConsumerKafkaMultiplex(DatabricksStreamingMixin, DatabricksWorkflow):
 
         df_source = self.enrich_df(df_source)
 
-        # TODO parsing is not needed?
         (
         df_source.writeStream
         .trigger(**self.sink_trigger)

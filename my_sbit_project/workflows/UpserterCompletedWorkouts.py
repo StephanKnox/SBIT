@@ -22,7 +22,6 @@ class UpserterCompletedWorkouts(GenericUpserter):
     
     @databricks_job_runner
     def launch(self):
-        #print(f"Launching {self.__class__.__name__} with params: {self.__dict__}")
         self.logger.info(repr(self))
 
         # read source
