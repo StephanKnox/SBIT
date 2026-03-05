@@ -18,3 +18,10 @@ job_config:
     deduplication:
       unique_cols: user_id, device_id
       tiebreaker_cols: registration_timestamp
+  logging:
+    min_level: "INFO"
+    handlers:
+      - "console"
+      - "delta_table"
+    options:
+      delta_table: "sbit_db.job_logs"

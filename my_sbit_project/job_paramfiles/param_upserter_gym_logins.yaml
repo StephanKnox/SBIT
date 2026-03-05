@@ -18,3 +18,10 @@ job_config:
     deduplication:
       unique_cols: mac_address, gym, login
       tiebreaker_cols: load_time
+  logging:
+    min_level: "INFO"
+    handlers:
+      - "console"
+      - "delta_table"
+    options:
+      delta_table: "sbit_db.job_logs"

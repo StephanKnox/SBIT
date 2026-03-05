@@ -5,6 +5,7 @@ from my_sbit_project.utils.mapping import date_loader_cols_mapping
 from my_sbit_project.utils.DatabricksStreamingMixin import DatabricksStreamingMixin
 from my_sbit_project.utils.JobConfigStreaming import JobConfig
 from my_sbit_project.utils.common import from_col_mapping_to_select
+from my_sbit_project.logging.common import databricks_job_runner
 
 
 json_schema = StructType([
@@ -33,9 +34,13 @@ class DateLoader(DatabricksStreamingMixin, DatabricksWorkflow):
         self.sink_target= self.job_cfg.sink.target
         self.sink_trigger = self.job_cfg.sink.trigger
         self.sink_options = self.job_cfg.sink.options
-    
+        # Streaming  
+        streaming_options = self.job_cfg.streaming.options
+        
+
+    @databricks_job_runner
     def launch(self):
-        print(self)
+        self.logger.info(repr(self))
 
         # read source
         df_source = self.read_files_source(json_schema)

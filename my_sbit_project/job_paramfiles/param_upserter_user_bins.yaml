@@ -12,3 +12,10 @@ job_config:
   params:
     merge:
       merge_condition: "target.user_id = source.user_id"
+  logging:
+    min_level: "INFO"
+    handlers:
+      - "console"
+      - "delta_table"
+    options:
+      delta_table: "sbit_db.job_logs"

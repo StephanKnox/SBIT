@@ -163,3 +163,14 @@ job_config:
             ON l.mac_address = w.mac_address 
             AND w. start_time BETWEEN l.login AND l.logout
             order by date, gym, l.mac_address, session_id
+
+    create_job_logs:
+      sql_query: >
+        CREATE TABLE IF NOT EXISTS IDENTIFIER(:catalog || '.sbit_db.' || 'job_logs')(
+                    timestamp TIMESTAMP,
+                    level STRING,
+                    job_name STRING,
+                    run_id STRING,
+                    message STRING,
+                    exception STRING,
+                    duration_ms BIGINT)

@@ -11,3 +11,10 @@ job_config:
     options:
       checkpointLocation: "/Volumes/dev/param/checkpoint/ConsumerUserRegistrations"
   
+  logging:
+    min_level: "INFO"
+    handlers:
+      - "console"
+      - "delta_table"
+    options:
+      delta_table: "sbit_db.job_logs"
