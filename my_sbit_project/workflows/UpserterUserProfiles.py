@@ -4,6 +4,7 @@ from my_sbit_project.workflows.GenericUpserter import GenericUpserter
 from my_sbit_project.utils.constants import address_struct
 from my_sbit_project.utils.common import from_col_mapping_to_select
 from my_sbit_project.utils.mapping import user_profiles_cols_mapping
+from my_sbit_project.logging.common import databricks_job_runner
 
 
 json_schema = StructType([
@@ -29,7 +30,11 @@ class UpserterUserProfiles(GenericUpserter):
         return df_enriched
     
     
+    @databricks_job_runner
     def launch(self):
+        self.logger.info(repr(self))
+
+        # read source
         df_source = self.read_deltatable_source(self.source_filter)
         df_parsed = self.parse_df(df_source)
 

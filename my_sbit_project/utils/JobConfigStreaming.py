@@ -28,9 +28,16 @@ class BackfillConfig:
     options: dict
 
 @dataclass
+class LoggingConfig:
+    min_level: str
+    handlers: list
+    options: dict
+
+@dataclass
 class JobConfig:
     sink: SinkConfig
     source: SourceConfig
     params: Params
     streaming_options: StreamingOptions
     backfill: BackfillConfig
+    logging: LoggingConfig

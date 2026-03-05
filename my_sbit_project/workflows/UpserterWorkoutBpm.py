@@ -1,5 +1,6 @@
 from pyspark.sql import DataFrame, functions as fn
 from my_sbit_project.workflows.GenericUpserter import GenericUpserter
+from my_sbit_project.logging.common import databricks_job_runner
 
 
 class UpserterWorkoutBpm(GenericUpserter):
@@ -29,7 +30,12 @@ class UpserterWorkoutBpm(GenericUpserter):
         
         return df_enriched
     
+    @databricks_job_runner
     def launch(self):
+
+        self.logger.info(repr(self))
+
+        # read source
         df_source = self.read_deltatable_source(self.source_filter)
         df_enriched = self.enrich_df(df_source)
 

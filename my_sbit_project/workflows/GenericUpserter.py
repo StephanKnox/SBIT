@@ -60,10 +60,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         pass
     
     def upsert(self, df, epoch_id):
-        ##from delta.Tables import delta
-        # TODO self.logger.info(f"Starting to process epoch_id {epoch_id}")
-        print(f"Starting to process epoch_id {epoch_id}")
-
+        self.logger.info(f"Starting to process epoch_id {epoch_id}")
         start_time = time.time()
 
         if self.unique_cols:
@@ -89,7 +86,7 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
 
         self.merge(df, target_table, update_exprs)
 
-        print(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
+        self.logger.info(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 
         # TODO, retry functionality
         # if multiple jobs merge to the same table, merge with retries
@@ -113,8 +110,6 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
         ##self.logger.info(f"foreachBatch execution finished. Execution time, seconds: {(time.time() - start_time)}")
 
     def merge(self, df_source, target_table, update_exprs):
-        #from delta.Tables import DeltaTable
-        ##target_table = DeltaTable.forName(self.spark, self.sink_target)
 
         if not self.delete_whenmatched:
             (target_table.alias("target").merge(df_source.alias("source"), self.merge_condition)
@@ -125,10 +120,6 @@ class GenericUpserter(DatabricksStreamingMixin, DatabricksWorkflow, ABC):
                 .whenMatchedDelete().execute() )
             df_source.write.format("delta").mode("append").insertInto(self.sink_target)
 
-    # TODO: how to implement parsing as well as upsert?
-    ##def enrich_df(self, df: DataFrame) -> DataFrame:
-    ##    df_enriched = df.selectExpr("user_id", "device_id", "mac_address", "cast(registration_timestamp as timestamp)")
-    ##    return df_enriched
-
-    
-
+    @abstractmethod
+    def enrich_df(self, df) -> DataFrame:
+        pass
